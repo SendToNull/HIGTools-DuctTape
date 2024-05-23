@@ -3,7 +3,7 @@ plugins {
 }
 
 base {
-    archivesBaseName = project.archives_base_name
+    archivesName = project.archives_base_name
     version = project.mod_version
     group = project.maven_group
 }
@@ -42,8 +42,8 @@ tasks {
     }
 
     java {
-        sourceCompatibility = JavaVersion.VERSION_21
-        targetCompatibility = JavaVersion.VERSION_21
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
 
     javadoc {
