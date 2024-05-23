@@ -55,6 +55,7 @@ import java.util.function.Predicate;
 
 @SuppressWarnings("ConstantConditions")
 public class HighwayBuilderPlus extends Module {
+
     public enum Floor {
         Replace,
         PlaceMissing
@@ -532,7 +533,13 @@ public class HighwayBuilderPlus extends Module {
 
     private boolean canMine(MBlockPos pos, boolean ignoreBlocksToPlace) {
         BlockState state = pos.getState();
-        return BlockUtils.canBreak(pos.getBlockPos(), state) && (ignoreBlocksToPlace || !blocksToPlace.get().contains(state.getBlock()));
+        if (!BlockUtils.canBreak(pos.getBlockPos(), state)) {
+            return false;
+        }
+        if (pos.getBlockPos().getY() > 120 && !state.isAir()) { // HACK: Force mining above rails
+            return true;
+        }
+        return ignoreBlocksToPlace || !blocksToPlace.get().contains(state.getBlock());
     }
 
     private boolean canPlace(MBlockPos pos, boolean liquids) {
@@ -540,6 +547,17 @@ public class HighwayBuilderPlus extends Module {
     }
 
     private enum State {
+
+        GrimWait {
+            private int waitTimer = 2; // could be a boolean but maybe want to make this configurable
+            @Override
+            protected void tick(HighwayBuilderPlus b) {
+                if (waitTimer > 0) waitTimer--;
+                else b.setState(b.lastState);
+                return;
+            }
+        },
+
         Center {
             @Override
             protected void tick(HighwayBuilderPlus b) {
@@ -659,12 +677,12 @@ public class HighwayBuilderPlus extends Module {
         MineRailings {
             @Override
             protected void start(HighwayBuilderPlus b) {
-                mine(b, b.blockPosProvider.getRailings(true), false, PlaceRailings, this);
+                mine(b, b.blockPosProvider.getRailings(true), false, PlaceRailings, this, true);
             }
 
             @Override
             protected void tick(HighwayBuilderPlus b) {
-                mine(b, b.blockPosProvider.getRailings(true), false, PlaceRailings, this);
+                mine(b, b.blockPosProvider.getRailings(true), false, PlaceRailings, this, true);
             }
         },
 
@@ -931,6 +949,9 @@ public class HighwayBuilderPlus extends Module {
         protected abstract void tick(HighwayBuilderPlus b);
 
         protected void mine(HighwayBuilderPlus b, MBPIterator it, boolean ignoreBlocksToPlace, State nextState, State lastState) {
+            mine(b, it, ignoreBlocksToPlace, nextState, lastState, false);
+        }
+        protected void mine(HighwayBuilderPlus b, MBPIterator it, boolean ignoreBlocksToPlace, State nextState, State lastState, boolean railMode) {
             boolean breaking = false;
             boolean finishedBreaking = false; // If you can multi break this lets you mine blocks between tasks in a single tick
 
@@ -939,7 +960,16 @@ public class HighwayBuilderPlus extends Module {
                 if (b.breakTimer > 0) return;
 
                 BlockState state = pos.getState();
-                if (state.isAir() || (!ignoreBlocksToPlace && b.blocksToPlace.get().contains(state.getBlock()))) continue;
+
+                // Duct-Tape: Force mining of building blocks (obsidian) above the railing
+                if (railMode && pos.getBlockPos().getY() > 120) {
+                    if (state.isAir()) {
+                        continue;
+                    }
+                // (Normal Case)
+                } else if (state.isAir() || (!ignoreBlocksToPlace && b.blocksToPlace.get().contains(state.getBlock()))) {
+                    continue;
+                }
 
                 int slot = findAndMoveBestToolToHotbar(b, state, false);
                 if (slot == -1) return;
@@ -948,8 +978,20 @@ public class HighwayBuilderPlus extends Module {
 
                 BlockPos mcPos = pos.getBlockPos();
                 if (BlockUtils.canBreak(mcPos)) {
-                    if (b.rotation.get().mine) Rotations.rotate(Rotations.getYaw(mcPos), Rotations.getPitch(mcPos), () -> BlockUtils.breakBlock(mcPos, true));
-                    else BlockUtils.breakBlock(mcPos, true);
+                    if (b.rotation.get().mine) {
+                        Rotations.rotate(Rotations.getYaw(mcPos), Rotations.getPitch(mcPos), () -> {
+                            if (b.lastState != State.GrimWait) {
+                                b.setState(State.GrimWait);
+                            }
+                            BlockUtils.breakBlock(mcPos, false);
+                        });
+                    } else {
+                        if (b.lastState != State.GrimWait) {
+                            b.setState(State.GrimWait);
+                        }
+                        BlockUtils.breakBlock(mcPos, false);
+                    }
+
                     breaking = true;
 
                     b.breakTimer = b.breakDelay.get();
