@@ -16,7 +16,7 @@ import meteordevelopment.meteorclient.utils.entity.EntityUtils;
 import meteordevelopment.meteorclient.utils.player.FindItemResult;
 import meteordevelopment.meteorclient.utils.player.InvUtils;
 import meteordevelopment.orbit.EventHandler;
-import net.minecraft.component.DataComponentTypes;
+// import net.minecraft.component.DataComponentTypes;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.item.Items;
 import net.minecraft.network.packet.c2s.play.PlayerActionC2SPacket;
@@ -149,19 +149,19 @@ public class HandManager extends Module {
             // If we are eating check if we should still be eating
             if (shouldEat()) {
                 // Check if the item in current slot is not an egap
-                if (mc.player.getOffHandStack().getComponents().get(DataComponentTypes.FOOD) == null) {
-                    stopEating();
-                } else {
-                    startEating();
-                }
+                // if (mc.player.getOffHandStack().getComponents().get(DataComponentTypes.FOOD) == null) {
+                //     stopEating();
+                // } else {
+                //     startEating();
+                // }
             } else {
                 stopEating(); // If we shouldn't be eating anymore then stop
             }
         } else {
             // If we are not eating check if we should start eating
-            if (shouldEat() && mc.player.getOffHandStack().getComponents().get(DataComponentTypes.FOOD) != null) {
-                startEating();
-            }
+            // if (shouldEat() && mc.player.getOffHandStack().getComponents().get(DataComponentTypes.FOOD) != null) {
+            //     startEating();
+            // }
         }
     }
 

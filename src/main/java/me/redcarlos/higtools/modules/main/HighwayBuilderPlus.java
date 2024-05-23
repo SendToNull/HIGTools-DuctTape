@@ -416,7 +416,7 @@ public class HighwayBuilderPlus extends Module {
             return;
         }
 
-        if (Modules.get().get(KillAura.class).attacking) return;
+        // if (Modules.get().get(KillAura.class).attacking) return;
 
         if (pauseOnLag.get()) {
             if (TickRate.INSTANCE.getTimeSinceLastTick() > 1.4f) {
@@ -445,15 +445,15 @@ public class HighwayBuilderPlus extends Module {
             moduleEating = false;
         }
 
-        if (!moduleAttacking && Modules.get().get(KillAura.class).attacking) {
-            setState(State.Wait);
-            moduleAttacking = true;
-        }
+        // if (!moduleAttacking && Modules.get().get(KillAura.class).attacking) {
+        //     setState(State.Wait);
+        //     moduleAttacking = true;
+        // }
 
-        if (moduleAttacking && !Modules.get().get(KillAura.class).attacking) {
-            setState(lastState);
-            moduleAttacking = false;
-        }
+        // if (moduleAttacking && !Modules.get().get(KillAura.class).attacking) {
+        //     setState(lastState);
+        //     moduleAttacking = false;
+        // }
 
         count = 0;
         state.tick(this);
