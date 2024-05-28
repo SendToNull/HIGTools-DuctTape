@@ -51,10 +51,10 @@
     - Pause on Lag: True
     - Resume TPS: 18
     - Don't Break Tools: True
-    - Break Delay: 7
+    - Break Delay: 10
     - Blocks Per Tick: 1
     - Blocks to Place: Obsidian
-    - Place Delay: 2
+    - Place Delay: 4
     - Placements Per Tick: 1
     - Trash Items: *Don't use this, use Meteor inventory tweaks instead*
     - Mine Ender Chests: True
